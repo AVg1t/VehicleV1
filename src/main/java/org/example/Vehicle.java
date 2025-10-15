@@ -5,13 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
 
-interface VehicleActionable {
-    void run();
-
-    void stop();
-}
-
-sealed public class Vehicle extends VehicleDescriptor implements VehicleActionable permits Car, Plane, Boat, Bicycle {
+sealed public class Vehicle extends VehicleDescriptor permits Car, Plane, Boat, Bicycle {
     protected List<VehicleOption> options = new ArrayList<>();
 
     public Vehicle() {
@@ -21,6 +15,83 @@ sealed public class Vehicle extends VehicleDescriptor implements VehicleActionab
         options.add(new VehicleOption("Weight", "-", "kg"));
 //      создаем в состоянии stopped
         setState(vehicleState.STOPPED.getState());
+    }
+
+    public void fillVehicleOptions() {
+        System.out.println("-------------------------------------------------------------------------------------");
+        System.out.println("You choose vehicle type " + getType() + "! Now let`s describe it...");
+
+        for (VehicleOption option : getVehicleOptions()) {
+            setVehicleOptionValue(option.getOptionId(), this.getOption("Type " +
+                    option.getOptionId().toLowerCase() +
+                    " of a " + getType() + " measured in " +
+                    option.getOptionUnit().toLowerCase() +
+                    ":"));
+        }
+        System.out.println("Great! The " + getType() + " is ready and it can " + getAbility() + " with options:");
+    }
+
+    private String getOption(String outputMsg) {
+        System.out.println(outputMsg);
+//      создание объекта ввода и строки
+        Scanner scanner = new Scanner(System.in);
+        String userInput = null;
+//      в цикле, пока пользователь не введет exit, обрабатываем ввод пользователя
+        do {
+//          если строка ввода непустая, обрабатываем
+            if (!(userInput == null)) {
+                if (!userInput.isEmpty()) {
+//                  если пользователь ввел ? , выводим справку
+                    if (userInput.equals("?")) {
+                        info();
+//                  иначе считаем
+                    } else {
+                        try {
+                            if (userInput.isEmpty()) {
+                                return "-";
+                            } else {
+                                return userInput.trim().replaceAll("\\s+", " ");
+                            }
+//                      если была ошибка, выводим
+                        } catch (IllegalArgumentException e) {
+                            System.out.println(e.getMessage());
+                        }
+//
+                    }
+                } else {
+                    System.out.println("Enter your choice:");
+                }
+            }
+//          запрашиваем ввод
+            userInput = scanner.nextLine().trim().replaceAll("\\s+", " ");
+//      если введен exit, на выход
+        } while (!(userInput.isEmpty()));
+
+        return userInput.trim().replaceAll("\\s+", " ");
+    }
+
+    public void setVehicleOptionValue(String id, String value) throws IllegalStateException {
+//      заполняем список харакетеристик
+        Optional<VehicleOption> foundElement = options.stream().filter(obj -> obj.getOptionId().equals(id)).findFirst();
+        if (foundElement.isPresent()) {
+            foundElement.get().setOptionValue(value);
+        } else {
+            throw new IllegalStateException("I don`t know vehicle option '" + id + "'. Let`s try again...");
+        }
+//
+    }
+
+    public List<VehicleOption> getVehicleOptions() {
+        return options;
+    }
+
+    public void describeVehicleOptions() {
+//      описываем введенные харакетиристики
+        for (VehicleOption option : options) {
+            System.out.println("  - " + option.getOptionId() + ": " + option.getOptionValue() + " " + option.getOptionUnit());
+        }
+        info();
+//
     }
 
     public Vehicle construct(String type) throws IllegalArgumentException {
@@ -69,80 +140,5 @@ sealed public class Vehicle extends VehicleDescriptor implements VehicleActionab
         System.out.println();
         System.out.println("You can control a " + getType() +
                 " by typing /run, /stop. Or you can reset vehicle by /reset and start from scratch...");
-    }
-
-    public void describeVehicleOptions() {
-//      описываем введенные харакетиристики
-        System.out.println("Great! The " + getType() + " is ready and it can " + getAbility() + " with options:");
-        for (VehicleOption option : options) {
-            System.out.println("  - " + option.getOptionId() + ": " + option.getOptionValue() + " " + option.getOptionUnit());
-        }
-        info();
-//
-    }
-    protected void fillVehicleOptions() {
-        System.out.println("-------------------------------------------------------------------------------------");
-        System.out.println("You choose vehicle type " + getType() + "! Now let`s describe it...");
-
-        for (VehicleOption option : getVehicleOptions()) {
-            setVehicleOptionValue(option.getOptionId(),
-                    getVehicleOption("Type " + option.getOptionId().toLowerCase() +
-                            " of a " + getType() +
-                            " measured in " + option.getOptionUnit().toLowerCase() + ":"));
-        }
-    }
-
-    protected String getVehicleOption(String outputMsg) {
-        System.out.println(outputMsg);
-//      создание объекта ввода и строки
-        Scanner scanner = new Scanner(System.in);
-        String userInput = null;
-//      в цикле, пока пользователь не введет /exit, обрабатываем ввод пользователя
-        do {
-//          если строка ввода непустая, обрабатываем
-            if (!(userInput == null)) {
-                if (!userInput.isEmpty()) {
-//                  если пользователь ввел ? , выводим справку
-                    if (userInput.equals("?")) {
-                        info();
-//                  иначе считаем
-                    } else {
-                        try {
-                            if (userInput.isEmpty()) {
-                                return "-";
-                            } else {
-                                return userInput.trim().replaceAll("\\s+", " ");
-                            }
-//                      если была ошибка, выводим
-                        } catch (IllegalArgumentException e) {
-                            System.out.println(e.getMessage());
-                        }
-//
-                    }
-                } else {
-                    System.out.println("Enter your choice:");
-                }
-            }
-//          запрашиваем ввод
-            userInput = scanner.nextLine().trim().replaceAll("\\s+", " ");
-//      если введен exit, на выход
-        } while (!(userInput.isEmpty()));
-
-        return userInput.trim().replaceAll("\\s+", " ");
-    }
-
-    protected void setVehicleOptionValue(String id, String value) throws IllegalStateException {
-//      заполняем список харакетеристик
-        Optional<VehicleOption> foundElement = options.stream().filter(obj -> obj.getOptionId().equals(id)).findFirst();
-        if (foundElement.isPresent()) {
-            foundElement.get().setOptionValue(value);
-        } else {
-            throw new IllegalStateException("I don`t know vehicle option '" + id + "'. Let`s try again...");
-        }
-//
-    }
-
-    protected List<VehicleOption> getVehicleOptions() {
-        return options;
     }
 }

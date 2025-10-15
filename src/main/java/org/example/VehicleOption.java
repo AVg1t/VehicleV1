@@ -1,15 +1,15 @@
 package org.example;
 
-public class VehicleOption<V> {
+public class VehicleOption {
     private String optionId = null;
-    private V optionValue = null;
+    private String optionValue = null;
     private String optionUnit = null;
 
     public void setOptionId(String optionId) {
         this.optionId = optionId;
     }
 
-    public void setOptionValue(V optionValue) {
+    public void setOptionValue(String optionValue) {
         this.optionValue = optionValue;
     }
 
@@ -21,7 +21,7 @@ public class VehicleOption<V> {
         return optionId;
     }
 
-    public V getOptionValue() {
+    public String getOptionValue() {
         return optionValue;
     }
 
@@ -29,7 +29,7 @@ public class VehicleOption<V> {
         return optionUnit;
     }
 
-    public VehicleOption(String optionId, V optionValue, String optionUnit) {
+    public VehicleOption(String optionId, String optionValue, String optionUnit) {
         setOptionId(optionId);
         setOptionValue(optionValue);
         setOptionUnit(optionUnit);
